@@ -616,14 +616,14 @@ thread_awake_all(int64_t ticks){
 	while(te != list_end(&sleep_list)){
 		struct thread *t = list_entry(te,struct thread, elem);
 		if(ticks >= t->sleep_until){
-			thread_unblock(t);
 			te = list_remove(te);
+			thread_unblock(t);
 		}
 		else{
+			te = list_next(te);
 			if(min_awake_tick>t->sleep_until){
 				min_awake_tick = t->sleep_until;
 			}
-			te = list_next(te);
 		}
 	}
 }
