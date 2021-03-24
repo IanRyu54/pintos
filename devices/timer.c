@@ -130,7 +130,9 @@ timer_interrupt (struct intr_frame *args UNUSED) {
 	ticks++;
 	thread_tick ();
 	//@@@@ check sleep_list and wake up threads
-	thread_awake_all(ticks);
+	if(get_min_awake_tick()<=timer_ticks){
+		thread_awake_all(ticks);
+	}
 	//@@@@
 }
 

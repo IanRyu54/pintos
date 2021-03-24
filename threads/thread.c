@@ -30,6 +30,7 @@ static struct list ready_list;
 
 //@@@@
 static struct list sleep_list;
+static int64_t min_awake_tick;
 //@@@@
 
 /* Idle thread. */
@@ -601,12 +602,16 @@ thread_sleep(int64_t start, int64_t ticks){
 	enum intr_level cur_level;
 	cur_level = intr_disable();
 	thread_current() -> sleep_until = start+ticks;
+	if(min_awake_tick>start+ticks){
+		min_awake_tick = start+ticks;
+	}
 	list_push_back (&sleep_list, &thread_current() -> elem);
 	thread_block();
 	intr_set_level(cur_level);
 }
 void
 thread_awake_all(int64_t ticks){
+	min_awake_tick = INT64_MAX;
 	struct list_elem *te = list_begin(&sleep_list);
 	while(te != list_end(&sleep_list)){
 		struct thread *t = list_entry(te,struct thread, elem);
@@ -615,8 +620,15 @@ thread_awake_all(int64_t ticks){
 			te = list_remove(te);
 		}
 		else{
+			if(min_awake_tick>t->sleep_until){
+				min_awake_tick = t->sleep_until;
+			}
 			te = list_next(te);
 		}
 	}
+}
+int64_t
+get_min_awake_tick(void){
+	return min_awake_tick;
 }
 //@@@@
