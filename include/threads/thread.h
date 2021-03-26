@@ -147,6 +147,7 @@ void do_iret (struct intr_frame *tf);
 //@@@@project1 new functions :
 void thread_sleep (int64_t start, int64_t ticks);
 void thread_awake_all(int64_t ticks);
+bool cmp_priority (const struct list_elem *a,const struct list_elem *b,void *aux UNUSED);
 //@@@@
 
 #endif /* threads/thread.h */
