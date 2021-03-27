@@ -672,10 +672,10 @@ donate_priority(void)
 void remove_with_lock(struct lock *lock)
 {
 	struct thread *t = thread_current();
-	struct thread *e=list_begin(&(t->donate_list));
+	struct thread *e = list_entry(list_begin(&(t->donate_list)),struct thread,elem);
 	while(e!=NULL){
 		if(lock==e->wait_on_lock){
-			list_remove(&e);
+			list_remove(&e->elem);
 		}
 	}
 }
