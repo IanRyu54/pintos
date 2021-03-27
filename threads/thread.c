@@ -213,11 +213,16 @@ thread_create (const char *name, int priority,
 	thread_unblock (t);
 	
 	//@@@@
+	enum intr_level old_level = intr_disable();
 	struct thread *cur = thread_current();
-	if(t->priority>cur->priority)
+	if(!list_empty(&ready_list))
 	{
-		thread_yield();
+		if(t->priority>cur->priority)
+		{
+			thread_yield();
+		}
 	}
+	intr_set_level(old_level);
 	//@@@@
 	return tid;
 }
@@ -336,14 +341,17 @@ thread_set_priority (int new_priority) {
 	thread_current()->original_priority=new_priority;
 	refresh_priority();
 	if(old_priority<thread_current()->priority)
-		donate_priority();
+		donate_priority();_
 	if(list_empty(&thread_current()->donate_list) && old_priority>new_priority){
 		thread_current ()->priority = new_priority;
 	}
-	struct thread *t = list_entry(list_begin(&ready_list),struct thread,elem);
-	if(t->priority>thread_current()->priority && t!=NULL)
+	if(!list_empty(&ready_list))
 	{
-		thread_yield();
+		struct thread *t = list_entry(list_begin(&ready_list),struct thread,elem);
+		if(t->priority>thread_current()->priority && t!=NULL)
+		{
+			thread_yield();
+		}
 	}
 	intr_set_level(old_level);
 }
