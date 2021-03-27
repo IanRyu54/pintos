@@ -341,7 +341,7 @@ thread_set_priority (int new_priority) {
 	thread_current()->original_priority=new_priority;
 	refresh_priority();
 	if(old_priority<thread_current()->priority)
-		donate_priority();_
+		donate_priority();
 	if(list_empty(&thread_current()->donate_list) && old_priority>new_priority){
 		thread_current ()->priority = new_priority;
 	}
