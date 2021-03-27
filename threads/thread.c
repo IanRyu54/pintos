@@ -661,9 +661,10 @@ donate_priority(void)
 	struct thread *tc = thread_current();
 	while(t->wait_on_lock!=NULL)
 	{
-		if(t->wait_on_lock->holder->priority <tc->priority)
+		if(t->wait_on_lock->holder->priority <tc->priority){
 			t->wait_on_lock->holder->priority = tc->priority;
 			list_insert_ordered(&(t->wait_on_lock->holder->donate_list), &(t->elem),cmp_priority,NULL);
+		}
 		t = t->wait_on_lock->holder;
 	}
 }
