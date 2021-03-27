@@ -329,11 +329,15 @@ thread_yield (void) {
 /* Sets the current thread's priority to NEW_PRIORITY. */
 void
 thread_set_priority (int new_priority) {
-	if(list_empty(&(thread_current()->donate_list))){
-		thread_current()->priority = new_priority;
-		thread_current()->original_priority=new_priority;
-	}
-	else{
+	enum intr_level old_level = intr_disable();
+
+	
+	int old_priority = thread_current()->priority;
+	thread_current()->original_priority=new_priority;
+	refresh_priority();
+	if(old_priority<thread_current()->priority)
+		donate_priority();
+	if(list_empty(&thread_current()->donate_list) && old_priority>new_priority){
 		thread_current ()->priority = new_priority;
 	}
 	struct thread *t = list_entry(list_begin(&ready_list),struct thread,elem);
@@ -341,6 +345,7 @@ thread_set_priority (int new_priority) {
 	{
 		thread_yield();
 	}
+	intr_set_level(old_level);
 }
 
 /* Returns the current thread's priority. */
@@ -660,12 +665,19 @@ donate_priority(void)
 {
 	struct thread *t = thread_current();
 	struct thread *tc = thread_current();
-	while(t->wait_on_lock!=NULL)
+	while(t->wait_on_lock)
 	{
-		if(t->wait_on_lock->holder->priority <tc->priority){
-			t->wait_on_lock->holder->priority = tc->priority;
-			//list_insert_ordered(&t->wait_on_lock->holder->donate_list, &t->donate_list_elem,cmp_priority,NULL);
+		if(t->wait_on_lock->holder ==NULL)
+			return;
+		if(t->wait_on_lock->holder->priority >=tc->priority){
+			return;
 		}
+		t->wait_on_lock->holder->priority = tc->priority;
+		//list_insert_ordered(&t->wait_on_lock->holder->donate_list, &t->donate_list_elem,cmp_priority,NULL);
+		/*if(t->priority>thread_current()->priority && t!=NULL)
+		{
+			thread_yield();
+		}*/
 		t = t->wait_on_lock->holder;
 	}
 }
@@ -674,7 +686,7 @@ void remove_with_lock(struct lock *lock)
 {
 	struct thread *t = thread_current();
 	struct list_elem *e = list_begin(&t->donate_list);
-	if(!list_empty(&t->donate_list));{
+	if(!list_empty(&t->donate_list)){
 		while(e != list_end(&t->donate_list)){
 			struct thread *te = list_entry(e,struct thread,donate_list_elem);
 			if(lock==te->wait_on_lock){
@@ -689,11 +701,11 @@ void refresh_priority(void)
 {
 	struct thread *t = thread_current();
 	t->priority = t->original_priority;
-	if(!list_empty(&(t->donate_list))){
-		struct thread *biggest_thread = list_entry(list_begin(&(t->donate_list)),struct thread,donate_list_elem);
+	if(!list_empty(&t->donate_list)){
+		struct thread *biggest_thread = list_entry(list_begin(&t->donate_list),struct thread,donate_list_elem);
 		if(t->priority<biggest_thread->priority){
-			//t->priority = biggest_thread->priority;
-			thread_set_priority(biggest_thread->priority);
+			t->priority = biggest_thread->priority;
+			//thread_set_priority(biggest_thread->priority);
 		}
 	}
 }
