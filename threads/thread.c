@@ -431,6 +431,10 @@ init_thread (struct thread *t, const char *name, int priority) {
 	strlcpy (t->name, name, sizeof t->name);
 	t->tf.rsp = (uint64_t) t + PGSIZE - sizeof (void *);
 	t->priority = priority;
+	//@@@@
+	t->original_priority = priority;
+	list_init(&(t->donate_list));
+	//@@@@
 	t->magic = THREAD_MAGIC;
 }
 
@@ -642,5 +646,26 @@ cmp_priority(const struct list_elem *a,const struct list_elem *b,void *aux UNUSE
 	struct thread *at = list_entry(a,struct thread,elem);
 	struct thread *bt = list_entry(b,struct thread,elem);
 	return (at->priority > bt->priority);
+}
+
+void
+donate_priority(void)
+{
+	struct thread *t = thread_current();
+	while(t!=NULL)
+	{
+		if(t->wait_on_lock->holder->priority <t->priority)
+			t->wait_on_lock->holder->priority = t->priority;
+		t = t->wait_on_lock->holder;
+	}
+}
+
+void remove_with_lock(struct lock *lock)
+{
+	
+}
+
+void refresh_priority(void)
+{
 }
 //@@@@
