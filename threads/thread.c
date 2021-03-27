@@ -439,7 +439,8 @@ init_thread (struct thread *t, const char *name, int priority) {
 	t->priority = priority;
 	//@@@@
 	t->original_priority = priority;
-	list_init(&(t->donate_list));
+	t->wait_on_lock = NULL;
+	list_init(&t->donate_list);
 	//@@@@
 	t->magic = THREAD_MAGIC;
 }
@@ -663,7 +664,7 @@ donate_priority(void)
 	{
 		if(t->wait_on_lock->holder->priority <tc->priority){
 			t->wait_on_lock->holder->priority = tc->priority;
-			list_insert_ordered(&(t->wait_on_lock->holder->donate_list), &(t->elem),cmp_priority,NULL);
+			//list_insert_ordered(&t->wait_on_lock->holder->donate_list, &t->donate_list_elem,cmp_priority,NULL);
 		}
 		t = t->wait_on_lock->holder;
 	}
@@ -672,10 +673,14 @@ donate_priority(void)
 void remove_with_lock(struct lock *lock)
 {
 	struct thread *t = thread_current();
-	struct thread *e = list_entry(list_begin(&(t->donate_list)),struct thread,elem);
-	while(e!=NULL){
-		if(lock==e->wait_on_lock){
-			list_remove(&e->elem);
+	struct list_elem *e = list_begin(&t->donate_list);
+	if(!list_empty(&t->donate_list));{
+		while(e != list_end(&t->donate_list)){
+			struct thread *te = list_entry(e,struct thread,donate_list_elem);
+			if(lock==te->wait_on_lock){
+				list_remove(e);
+			}
+			e=list_next(e);
 		}
 	}
 }
@@ -685,7 +690,7 @@ void refresh_priority(void)
 	struct thread *t = thread_current();
 	t->priority = t->original_priority;
 	if(!list_empty(&(t->donate_list))){
-		struct thread *biggest_thread = list_entry(list_begin(&(t->donate_list)),struct thread,elem);
+		struct thread *biggest_thread = list_entry(list_begin(&(t->donate_list)),struct thread,donate_list_elem);
 		if(t->priority<biggest_thread->priority){
 			//t->priority = biggest_thread->priority;
 			thread_set_priority(biggest_thread->priority);
