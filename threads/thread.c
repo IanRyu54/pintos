@@ -11,6 +11,7 @@
 #include "threads/synch.h"
 #include "threads/vaddr.h"
 #include "intrinsic.h"
+#include "threads/fixed_point.h"
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
@@ -390,7 +391,7 @@ thread_get_nice (void) {
 int
 thread_get_load_avg (void) {
 	/* TODO: Your implementation goes here */
-	return load_avg*100;
+	return mult_mixed(load_avg,100);
 }
 
 /* Returns 100 times the current thread's recent_cpu value. */
@@ -731,37 +732,37 @@ void refresh_priority(void)
 	}
 }
 
-int update_load_avg(void)
+void update_load_avg(void)
 {
-	return (59*thread_get_load_avg()+list_size(&ready_list)*100)/6000;
+	load_avg = div_mixed(add_mixed(mult_mixed(load_avg,59),list_size(&ready_list)),60);
 }
 
 void incre_curr_recent_cpu(void)
 {
-	thread_current()->recent_cpu += 1;
+	thread_current()->recent_cpu=add_mixed(thread_current()->recent_cpu,1);
 }
 
-int update_recent_cpu()
+void update_recent_cpu()
 {
-	int decay = (2*load_avg)/(2*load_avg+1);
-	thread_current()->recent_cpu = decay * thread_current()->recent_cpu + thread_get_nice();
+	int decay = div_fp(mult_mixed(load_avg,2),add_mixed(mult_mixed(load_avg,2),1));
+	thread_current()->recent_cpu = add_mixed(mult_fp(decay,thread_current()->recent_cpu),thread_get_nice());
 	struct list_elem *t = list_begin(&ready_list);
 	while(t != list_end(&ready_list))
 	{
 		struct thread *ta = list_entry(t,struct thread,elem);
-		ta->recent_cpu = decay * thread_current()->recent_cpu + thread_get_nice();
+		ta->recent_cpu = add_mixed(mult_fp(decay, ta->recent_cpu),ta->nice);
 		t= list_next(t);
 	}
 }
 
 void update_priority(void)
 {
-	thread_current()->priority = PRI_MAX - thread_current()->recent_cpu/4 - thread_current()->nice *2;
+	thread_current()->priority = fp_to_int(sub_mixed(PRI_MAX*F - div_mixed(thread_current()->recent_cpu,4), thread_current()->nice *2));
 	struct list_elem *t = list_begin(&ready_list);
 	while(t != list_end(&ready_list))
 	{
 		struct thread *ta = list_entry(t,struct thread,elem);
-		ta->priority = PRI_MAX - ta->recent_cpu/4 - ta->nice *2;
+		ta->priority = fp_to_int(sub_mixed(PRI_MAX*F - div_mixed(ta->recent_cpu,4), ta->nice *2));
 		t= list_next(t);
 	}
 }
