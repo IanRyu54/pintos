@@ -133,12 +133,12 @@ timer_interrupt (struct intr_frame *args UNUSED) {
 	thread_awake_all(ticks);
 	if(thread_mlfqs)
 	{
-		if(ticks%4 ==0)
+		if(timer_ticks()%4 ==0)
 		{
 			update_priority();
 		}
 		incre_curr_recent_cpu();
-		if(ticks%100 ==0)
+		if(timer_ticks()%TIMER_FREQ ==0)
 		{
 			update_recent_cpu();
 			update_load_avg();

@@ -391,14 +391,14 @@ thread_get_nice (void) {
 int
 thread_get_load_avg (void) {
 	/* TODO: Your implementation goes here */
-	return mult_mixed(load_avg,100);
+	return fp_to_int_round(mult_mixed(load_avg,100));
 }
 
 /* Returns 100 times the current thread's recent_cpu value. */
 int
 thread_get_recent_cpu (void) {
 	/* TODO: Your implementation goes here */
-	return thread_current()->recent_cpu;
+	return fp_to_int_round(thread_current()->recent_cpu);
 }
 
 /* Idle thread.  Executes when no other thread is ready to run.
@@ -734,7 +734,10 @@ void refresh_priority(void)
 
 void update_load_avg(void)
 {
-	load_avg = div_mixed(add_mixed(mult_mixed(load_avg,59),list_size(&ready_list)),60);
+	if(thread_current != idle_thread)
+		load_avg = div_mixed(add_mixed(mult_mixed(load_avg,59),list_size(&ready_list)+1),60);
+	else
+		load_avg = div_mixed(add_mixed(mult_mixed(load_avg,59),list_size(&ready_list)),60);
 	if(load_avg <0)
 		load_avg =0;
 }

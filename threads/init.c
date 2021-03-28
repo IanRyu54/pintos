@@ -206,47 +206,38 @@ static char **
 parse_options (char **argv) {
 	for (; *argv != NULL && **argv == '-'; argv++) {
 		char *save_ptr;
-		printf("%s\n",*argv);
 		char *name = strtok_r (*argv, "=", &save_ptr);
 		char *value = strtok_r (NULL, "", &save_ptr);
 		if (!strcmp (name, "-h"))
 		{
 			usage ();
-			//printf("11");
 		}
 		else if (!strcmp (name, "-q"))
 		{
 			power_off_when_done = true;
-			//printf("22");
 		}
 #ifdef FILESYS
 		else if (!strcmp (name, "-f"))
 		{
 			format_filesys = true;
-			//printf("33");
 		}
 #endif
 		else if (!strcmp (name, "-rs"))
 		{
 			random_init (atoi (value));
-			//printf("44");
 		}
 		else if (!strcmp (name, "-mlfqs"))
 		{
-			power_off_when_done = true;
 			thread_mlfqs = true;
-			//printf("55");
 		}
 #ifdef USERPROG
 		else if (!strcmp (name, "-ul"))
 		{
 			user_page_limit = atoi (value);
-			//printf("66");
 		}
 		else if (!strcmp (name, "-threads-tests"))
 		{
 			thread_tests = true;
-			//printf("77");
 		}
 #endif
 		else
