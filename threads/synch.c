@@ -215,7 +215,9 @@ lock_acquire (struct lock *lock) {
 		donate_priority();
 	}
 	sema_down (&lock->semaphore);
-	cur->wait_on_lock=NULL;
+	if(!thread_mlfqs){
+		cur->wait_on_lock=NULL;
+	}
 	lock->holder = cur;
 	intr_set_level(old_level);
 	//@@@@
