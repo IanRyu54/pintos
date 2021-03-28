@@ -27,9 +27,10 @@
 
 /* List of processes in THREAD_READY state, that is, processes
    that are ready to run but not actually running. */
-static struct list ready_list;
+//static struct list ready_list;
 
 //@@@@
+static struct list ready_list;
 static struct list sleep_list;
 int load_avg;
 //@@@@
@@ -755,7 +756,10 @@ void incre_curr_recent_cpu(void)
 {
 	if(thread_current() == idle_thread)
 		return;
-	thread_current()->recent_cpu=add_mixed(thread_current()->recent_cpu,1);
+	else
+	{
+		thread_current()->recent_cpu=add_mixed(thread_current()->recent_cpu,1);
+	}
 }
 
 void update_recent_cpu()
@@ -765,14 +769,22 @@ void update_recent_cpu()
 	int decay = div_fp(mult_mixed(load_avg,2),add_mixed(mult_mixed(load_avg,2),1));
 	thread_current()->recent_cpu = add_mixed(mult_fp(decay,thread_current()->recent_cpu),thread_get_nice());
 	struct list_elem *t = list_begin(&ready_list);
+	struct thread *ta;
 	while(t != list_end(&ready_list))
 	{
-		if(t != idle_thread)
-		{
-			struct thread *ta = list_entry(t,struct thread,elem);
-			ta->recent_cpu = add_mixed(mult_fp(decay, ta->recent_cpu),ta->nice);
-		}
+		
+		ta = list_entry(t,struct thread,elem);
+		ta->recent_cpu = add_mixed(mult_fp(decay, ta->recent_cpu),ta->nice);
 		t= list_next(t);
+	}
+	struct list_elem *p = list_begin(&sleep_list);
+	struct thread *pa;
+	while(t != list_end(&sleep_list))
+	{
+		
+		pa = list_entry(p,struct thread,elem);
+		pa->recent_cpu = add_mixed(mult_fp(decay, pa->recent_cpu),pa->nice);
+		p= list_next(p);
 	}
 }
 
@@ -797,6 +809,17 @@ void update_priority(void)
 			ta -> priority =0;
 		}
 		t= list_next(t);
+	}
+	struct list_elem *p = list_begin(&sleep_list);
+	while(p != list_end(&sleep_list))
+	{
+		struct thread *pa = list_entry(p,struct thread,elem);
+		pa->priority = fp_to_int(sub_mixed(PRI_MAX*F - div_mixed(pa->recent_cpu,4), pa->nice *2));
+		if(pa->priority < 0)
+		{
+			pa -> priority =0;
+		}
+		p= list_next(p);
 	}
 }
 //@@@@
