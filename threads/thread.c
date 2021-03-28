@@ -32,7 +32,7 @@
 //@@@@
 static struct list ready_list;
 static struct list sleep_list;
-int load_avg;
+static int load_avg;
 //@@@@
 
 /* Idle thread. */
@@ -769,23 +769,27 @@ void update_recent_cpu()
 	int decay = div_fp(mult_mixed(load_avg,2),add_mixed(mult_mixed(load_avg,2),1));
 	thread_current()->recent_cpu = add_mixed(mult_fp(decay,thread_current()->recent_cpu),thread_get_nice());
 	struct list_elem *t = list_begin(&ready_list);
-	struct thread *ta;
 	while(t != list_end(&ready_list))
 	{
 		
-		ta = list_entry(t,struct thread,elem);
-		ta->recent_cpu = add_mixed(mult_fp(decay, ta->recent_cpu),ta->nice);
+		struct thread *ta = list_entry(t,struct thread,elem);
+		if(ta != idle_thread)
+		{
+			ta->recent_cpu = add_mixed(mult_fp(decay, ta->recent_cpu),ta->nice);
+		}
 		t= list_next(t);
 	}
-	struct list_elem *p = list_begin(&sleep_list);
-	struct thread *pa;
-	while(t != list_end(&sleep_list))
+	/*t = list_begin(&sleep_list);
+	while(t != list_end(&ready_list))
 	{
 		
-		pa = list_entry(p,struct thread,elem);
-		pa->recent_cpu = add_mixed(mult_fp(decay, pa->recent_cpu),pa->nice);
-		p= list_next(p);
-	}
+		struct thread *ta = list_entry(t,struct thread,elem);
+		if(ta != idle_thread)
+		{
+			ta->recent_cpu = add_mixed(mult_fp(decay, ta->recent_cpu),ta->nice);
+		}
+		t= list_next(t);
+	}*/
 }
 
 void update_priority(void)
@@ -810,16 +814,16 @@ void update_priority(void)
 		}
 		t= list_next(t);
 	}
-	struct list_elem *p = list_begin(&sleep_list);
-	while(p != list_end(&sleep_list))
+	/*t = list_begin(&sleep_list);
+	while(t != list_end(&sleep_list))
 	{
-		struct thread *pa = list_entry(p,struct thread,elem);
-		pa->priority = fp_to_int(sub_mixed(PRI_MAX*F - div_mixed(pa->recent_cpu,4), pa->nice *2));
-		if(pa->priority < 0)
+		struct thread *ta = list_entry(t,struct thread,elem);
+		ta->priority = fp_to_int(sub_mixed(PRI_MAX*F - div_mixed(ta->recent_cpu,4), ta->nice *2));
+		if(ta->priority < 0)
 		{
-			pa -> priority =0;
+			ta -> priority =0;
 		}
-		p= list_next(p);
-	}
+		t= list_next(t);
+	}*/
 }
 //@@@@
