@@ -67,6 +67,7 @@ int main (void) NO_RETURN;
 /* Pintos main program. */
 int
 main (void) {
+	//printf("!!");
 	uint64_t mem_end;
 	char **argv;
 
@@ -220,7 +221,9 @@ parse_options (char **argv) {
 		else if (!strcmp (name, "-rs"))
 			random_init (atoi (value));
 		else if (!strcmp (name, "-mlfqs"))
+		{
 			thread_mlfqs = true;
+		}
 #ifdef USERPROG
 		else if (!strcmp (name, "-ul"))
 			user_page_limit = atoi (value);

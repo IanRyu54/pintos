@@ -735,15 +735,21 @@ void refresh_priority(void)
 void update_load_avg(void)
 {
 	load_avg = div_mixed(add_mixed(mult_mixed(load_avg,59),list_size(&ready_list)),60);
+	if(load_avg <0)
+		load_avg =0;
 }
 
 void incre_curr_recent_cpu(void)
 {
+	if(thread_current() == idle_thread)
+		return;
 	thread_current()->recent_cpu=add_mixed(thread_current()->recent_cpu,1);
 }
 
 void update_recent_cpu()
 {
+	if(thread_current() == idle_thread)
+		return;
 	int decay = div_fp(mult_mixed(load_avg,2),add_mixed(mult_mixed(load_avg,2),1));
 	thread_current()->recent_cpu = add_mixed(mult_fp(decay,thread_current()->recent_cpu),thread_get_nice());
 	struct list_elem *t = list_begin(&ready_list);
@@ -757,12 +763,24 @@ void update_recent_cpu()
 
 void update_priority(void)
 {
+	if(thread_current() == idle_thread)
+	{
+		return;
+	}
 	thread_current()->priority = fp_to_int(sub_mixed(PRI_MAX*F - div_mixed(thread_current()->recent_cpu,4), thread_current()->nice *2));
+	if(thread_current()->priority < 0)
+	{
+		thread_current() -> priority =0;
+	}
 	struct list_elem *t = list_begin(&ready_list);
 	while(t != list_end(&ready_list))
 	{
 		struct thread *ta = list_entry(t,struct thread,elem);
 		ta->priority = fp_to_int(sub_mixed(PRI_MAX*F - div_mixed(ta->recent_cpu,4), ta->nice *2));
+		if(ta->priority < 0)
+		{
+			ta -> priority =0;
+		}
 		t= list_next(t);
 	}
 }
