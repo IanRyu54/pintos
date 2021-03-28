@@ -204,17 +204,19 @@ lock_acquire (struct lock *lock) {
 	//@@@@
 	enum intr_level old_level = intr_disable();
 	struct thread *cur = thread_current();
-	if(lock->holder != NULL)
+	if(lock->holder != NULL && !thread_mlfqs)
 	{
 		cur->wait_on_lock = lock;
 		//lock->holder->original_priority = lock->holder->priority;
 		list_insert_ordered(&lock->holder->donate_list,&cur->donate_list_elem,cmp_priority,NULL);
 	}
-	donate_priority();
+	if(!thread_mlfqs)
+	{
+		donate_priority();
+	}
 	sema_down (&lock->semaphore);
 	cur->wait_on_lock=NULL;
 	lock->holder = cur;
-	cur->wait_on_lock=NULL;
 	intr_set_level(old_level);
 	//@@@@
 	//lock->holder = thread_current ();
@@ -255,8 +257,11 @@ lock_release (struct lock *lock) {
 	//@@@@
 	lock->holder = NULL;
 	//@@@@
-	remove_with_lock(lock);
-	refresh_priority();
+	if(!thread_mlfqs)
+	{
+		remove_with_lock(lock);
+		refresh_priority();
+	}
 	//@@@@
 	
 	sema_up (&lock->semaphore);

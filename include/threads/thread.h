@@ -98,6 +98,8 @@ struct thread {
 	struct lock *wait_on_lock;
 	struct list donate_list;
 	struct list_elem donate_list_elem;
+	int nice;
+	int recent_cpu;
 	//@@@@
 	/* Shared between thread.c and synch.c. */
 	struct list_elem elem;              /* List element. */
@@ -157,6 +159,10 @@ bool cmp_priority (const struct list_elem *a,const struct list_elem *b,void *aux
 void donate_priority(void);
 void remove_with_lock(struct lock *lock);
 void refresh_priority(void);
+int update_load_avg(void);
+void incre_curr_recent_cpu(void);
+int update_recent_cpu(void);
+void update_priority(void);
 //@@@@
 
 #endif /* threads/thread.h */
