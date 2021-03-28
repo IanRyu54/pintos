@@ -767,8 +767,11 @@ void update_recent_cpu()
 	struct list_elem *t = list_begin(&ready_list);
 	while(t != list_end(&ready_list))
 	{
-		struct thread *ta = list_entry(t,struct thread,elem);
-		ta->recent_cpu = add_mixed(mult_fp(decay, ta->recent_cpu),ta->nice);
+		if(t != idle_thread)
+		{
+			struct thread *ta = list_entry(t,struct thread,elem);
+			ta->recent_cpu = add_mixed(mult_fp(decay, ta->recent_cpu),ta->nice);
+		}
 		t= list_next(t);
 	}
 }
