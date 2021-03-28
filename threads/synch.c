@@ -122,9 +122,12 @@ sema_up (struct semaphore *sema) {
 	}
 	sema->value++;
 	//@@@@
-	if(t->priority > thread_current() -> priority)
+	if(!intr_context())
 	{
-		thread_yield();
+		if(t->priority > thread_current() -> priority)
+		{
+			thread_yield();
+		}
 	}
 	intr_set_level (old_level);
 	//@@@@
@@ -215,9 +218,7 @@ lock_acquire (struct lock *lock) {
 		donate_priority();
 	}
 	sema_down (&lock->semaphore);
-	if(!thread_mlfqs){
-		cur->wait_on_lock=NULL;
-	}
+	cur->wait_on_lock=NULL;
 	lock->holder = cur;
 	intr_set_level(old_level);
 	//@@@@

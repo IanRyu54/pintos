@@ -153,7 +153,7 @@ int thread_get_load_avg (void);
 void do_iret (struct intr_frame *tf);
 
 //@@@@project1 new functions :
-void thread_sleep (int64_t start, int64_t ticks);
+void thread_sleep (int64_t start,int64_t ticks);
 void thread_awake_all(int64_t ticks);
 bool cmp_priority (const struct list_elem *a,const struct list_elem *b,void *aux UNUSED);
 void donate_priority(void);
@@ -163,6 +163,12 @@ void update_load_avg(void);
 void incre_curr_recent_cpu(void);
 void update_recent_cpu(void);
 void update_priority(void);
+//####
+/*void update_recent_cpu(struct thread *t);
+void update_priority(struct thread *t);
+void preempt_thread (void);*/
+//####
+bool lesstick (const struct list_elem * a, const struct list_elem * b, void * aux);
 //@@@@
 
 #endif /* threads/thread.h */

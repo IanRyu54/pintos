@@ -31,7 +31,7 @@ static struct list ready_list;
 
 //@@@@
 static struct list sleep_list;
-static int load_avg;
+int load_avg;
 //@@@@
 
 /* Idle thread. */
@@ -333,7 +333,7 @@ thread_yield (void) {
 	old_level = intr_disable ();
 	if (curr != idle_thread)
 		//list_push_back (&ready_list, &curr->elem);
-		list_insert_ordered(&ready_list, &curr->elem,cmp_priority,NULL);
+		list_insert_ordered(&ready_list, &curr->elem,(list_less_func *) &cmp_priority,NULL);
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
 }
@@ -384,21 +384,30 @@ thread_set_nice (int nice UNUSED) {
 int
 thread_get_nice (void) {
 	/* TODO: Your implementation goes here */
-	return thread_current()->nice;
+	enum intr_level old_level = intr_disable();
+	int new_nice = thread_current()->nice;
+	intr_set_level(old_level);
+	return new_nice;
 }
 
 /* Returns 100 times the system load average. */
 int
 thread_get_load_avg (void) {
 	/* TODO: Your implementation goes here */
-	return fp_to_int_round(mult_mixed(load_avg,100));
+	enum intr_level old_level = intr_disable();
+	int new_load_avg = fp_to_int_round(mult_mixed(load_avg,100));
+	intr_set_level(old_level);
+	return new_load_avg;
 }
 
 /* Returns 100 times the current thread's recent_cpu value. */
 int
 thread_get_recent_cpu (void) {
 	/* TODO: Your implementation goes here */
-	return fp_to_int_round(thread_current()->recent_cpu);
+	enum intr_level old_level = intr_disable();
+	int new_recent_cpu = fp_to_int_round(mult_mixed(thread_current()->recent_cpu,100));
+	intr_set_level(old_level);
+	return new_recent_cpu;
 }
 
 /* Idle thread.  Executes when no other thread is ready to run.
@@ -734,7 +743,7 @@ void refresh_priority(void)
 
 void update_load_avg(void)
 {
-	if(thread_current != idle_thread)
+	if(thread_current() != idle_thread)
 		load_avg = div_mixed(add_mixed(mult_mixed(load_avg,59),list_size(&ready_list)+1),60);
 	else
 		load_avg = div_mixed(add_mixed(mult_mixed(load_avg,59),list_size(&ready_list)),60);

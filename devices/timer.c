@@ -130,20 +130,21 @@ timer_interrupt (struct intr_frame *args UNUSED) {
 	ticks++;
 	thread_tick ();
 	//@@@@ check sleep_list and wake up threads
-	thread_awake_all(ticks);
 	if(thread_mlfqs)
 	{
+		incre_curr_recent_cpu();
 		if(timer_ticks()%4 ==0)
 		{
 			update_priority();
 		}
-		incre_curr_recent_cpu();
 		if(timer_ticks()%TIMER_FREQ ==0)
 		{
-			update_recent_cpu();
 			update_load_avg();
+			update_recent_cpu();
+			update_priority();
 		}
 	}
+	thread_awake_all(ticks);
 	//@@@@
 }
 

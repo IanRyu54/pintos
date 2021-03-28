@@ -1,6 +1,4 @@
 //fixed point arithmetic in 17.14 format
-#include<stdio.h>
-#include <stdint.h>
 #define F (1 << 14) //fixed point 1
 #define INT_MAX ((1<<31)-1)
 #define INT_MIN (-1(1<<31))
