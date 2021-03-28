@@ -138,8 +138,11 @@ timer_interrupt (struct intr_frame *args UNUSED) {
 			update_priority();
 		}
 		incre_curr_recent_cpu();
-		update_recent_cpu();
-		update_load_avg();
+		if(ticks%100 ==0)
+		{
+			update_recent_cpu();
+			update_load_avg();
+		}
 	}
 	//@@@@
 }

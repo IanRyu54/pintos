@@ -159,9 +159,9 @@ bool cmp_priority (const struct list_elem *a,const struct list_elem *b,void *aux
 void donate_priority(void);
 void remove_with_lock(struct lock *lock);
 void refresh_priority(void);
-int update_load_avg(void);
+void update_load_avg(void);
 void incre_curr_recent_cpu(void);
-int update_recent_cpu(void);
+void update_recent_cpu(void);
 void update_priority(void);
 //@@@@
 
